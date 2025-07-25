@@ -149,19 +149,20 @@ function M.clear_cache(force)
 	local temp_path = paths.get_temp_path()
 	local checksum_path = paths.get_checksum_path()
 	local version_path = paths.get_version_path()
+	local cleanup_errors = {}
 
 	-- Remove temporary files if they exist
 	if vim.fn.filereadable(temp_path) == 1 then
 		local ok, err = pcall(files.delete_file, temp_path)
 		if not ok then
-			table.insert(errors, string.format("Failed to delete temp file: %s", err))
+			table.insert(cleanup_errors, string.format("Failed to delete temp file: %s", err))
 		end
 	end
 
 	if vim.fn.filereadable(checksum_path) == 1 then
 		local ok, err = pcall(files.delete_file, checksum_path)
 		if not ok then
-			table.insert(errors, string.format("Failed to delete checksum file: %s", err))
+			table.insert(cleanup_errors, string.format("Failed to delete checksum file: %s", err))
 		end
 	end
 
@@ -170,21 +171,21 @@ function M.clear_cache(force)
 		if vim.fn.filereadable(binary_path) == 1 then
 			local ok, err = pcall(files.delete_file, binary_path)
 			if not ok then
-				table.insert(errors, string.format("Failed to delete binary file: %s", err))
+				table.insert(cleanup_errors, string.format("Failed to delete binary file: %s", err))
 			end
 		end
 
 		if vim.fn.filereadable(version_path) == 1 then
 			local ok, err = pcall(files.delete_file, version_path)
 			if not ok then
-				table.insert(errors, string.format("Failed to delete version file: %s", err))
+				table.insert(cleanup_errors, string.format("Failed to delete version file: %s", err))
 			end
 		end
 	end
 
 	-- Return results
-	if #errors > 0 then
-		return false, table.concat(errors, "\n")
+	if #cleanup_errors > 0 then
+		return false, table.concat(cleanup_errors, "\n")
 	end
 
 	vim.notify("PlayerOne: Cache cleared successfully", vim.log.levels.INFO)
