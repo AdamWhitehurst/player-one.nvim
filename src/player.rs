@@ -4,6 +4,11 @@ use rodio::{OutputStream, OutputStreamHandle, Sink};
 use std::sync::{Arc, Mutex};
 use thiserror::Error;
 
+#[cfg(target_os = "linux")]
+unsafe extern "C" {
+    fn suppress_alsa_errors();
+}
+
 #[derive(Error, Debug)]
 pub enum PlayError {
     #[error("Audio device error: {0}")]
@@ -18,8 +23,9 @@ pub struct Player {
 
 impl Player {
     pub fn new() -> Result<Self, PlayError> {
-        // Lazy initialization - audio context created only when first sound is played
-        // This reduces ALSA polling errors by avoiding persistent audio connections
+        #[cfg(target_os = "linux")]
+        unsafe { suppress_alsa_errors(); }
+
         Ok(Self {
             audio_context: Arc::new(Mutex::new(None)),
         })

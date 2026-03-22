@@ -7,6 +7,15 @@ fn main() {
         println!("cargo:rustc-link-lib=dylib=luajit-5.1");
     }
 
+    #[cfg(target_os = "linux")]
+    {
+        // Compile C shim to suppress ALSA stderr error messages
+        cc::Build::new()
+            .file("src/alsa_suppress.c")
+            .compile("alsa_suppress");
+        println!("cargo:rustc-link-lib=asound");
+    }
+
     // delete existing version file created by downloader
     let _ = std::fs::remove_file("target/release/version");
     // get current sha from git
